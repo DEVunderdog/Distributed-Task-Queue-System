@@ -4,7 +4,7 @@ import "github.com/spf13/viper"
 
 type Config struct {
 	Environment string `mapstructure:"ENVIRONMENT"`
-	HTTPServer  string `mapstructure:"HTTP_SERVER"`
+	HTTPServer  string `mapstructure:"HTTP_SERVER_ADDRESS"`
 	DBSource    string `mapstructure:"DB_SOURCE"`
 }
 

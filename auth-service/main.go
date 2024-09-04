@@ -24,7 +24,7 @@ func main() {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 
 	
-	config, err := utils.LoadConfig("auth-service/auth-service.env")
+	config, err := utils.LoadConfig("auth-service.env")
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot load config")
 	}
