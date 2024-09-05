@@ -1,6 +1,8 @@
 package api
 
 import (
+	"net/http"
+
 	database "github.com/DEVunderdog/auth-service/database/sqlc"
 	"github.com/DEVunderdog/auth-service/utils"
 	"github.com/gin-gonic/gin"
@@ -29,7 +31,12 @@ func (server *Server) setupRouter() {
 	server.router = router
 }
 
-func (server *Server) Start(address string) error {
-	return server.router.Run(address)
+func (server *Server) Start(address string) *http.Server {
+	srv := &http.Server{
+		Addr: address,
+		Handler: server.router,
+	}
+
+	return srv
 }
 

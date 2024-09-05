@@ -2,9 +2,13 @@ package main
 
 import (
 	"context"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
+
+	// "time"
 
 	"github.com/DEVunderdog/auth-service/api"
 	database "github.com/DEVunderdog/auth-service/database/sqlc"
@@ -14,27 +18,19 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var interruptSignals = []os.Signal{
-	os.Interrupt,
-	syscall.SIGTERM,
-	syscall.SIGINT,
-}
-
 func main() {
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 
-	
 	config, err := utils.LoadConfig("auth-service.env")
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot load config")
 	}
-	
+
 	if config.Environment == "development" {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
-
-	ctx, stop := signal.NotifyContext(context.Background(), interruptSignals...)
-	defer stop()
 
 	connPool, err := pgxpool.New(ctx, config.DBSource)
 	if err != nil {
@@ -48,10 +44,22 @@ func main() {
 		log.Fatal().Err(err).Msg("cannot create server")
 	}
 
-	err = server.Start(config.HTTPServer)
-	
-	if err != nil {
-		log.Fatal().Err(err).Msg("cannot start server")
-	}
-}
+	srv := server.Start(config.HTTPServer)
 
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatal().Msgf("listen: %s\n", err)
+		}
+	}()
+
+	<-ctx.Done()
+	stop()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatal().Err(err).Msg("Server forced to shutdown")
+	}
+
+	log.Info().Msg("Server exiting")
+}
