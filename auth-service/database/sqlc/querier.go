@@ -6,6 +6,8 @@ package database
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
@@ -16,6 +18,7 @@ type Querier interface {
 	DeleteJWTKey(ctx context.Context, publicKey string) error
 	DeleteSessions(ctx context.Context, id int64) error
 	GetAllSessions(ctx context.Context, arg GetAllSessionsParams) ([]Session, error)
+	GetLatestJWTKey(ctx context.Context, isActive pgtype.Bool) ([]Jwtkey, error)
 	GetSessionByUser(ctx context.Context, arg GetSessionByUserParams) ([]Session, error)
 	GetSessionsByActiveness(ctx context.Context, arg GetSessionsByActivenessParams) ([]Session, error)
 	GetUserSessionsByActiveness(ctx context.Context, arg GetUserSessionsByActivenessParams) ([]Session, error)

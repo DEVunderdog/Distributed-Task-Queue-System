@@ -6,6 +6,9 @@ type Config struct {
 	Environment string `mapstructure:"ENVIRONMENT"`
 	HTTPServer  string `mapstructure:"HTTP_SERVER_ADDRESS"`
 	DBSource    string `mapstructure:"DB_SOURCE"`
+	Issuer      string `mapstructure:"ISSUER"`
+	Audience    string `mapstructure:"AUDIENCE"`
+	Passphrase  string `mapstructure:"PASSPHRASE"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

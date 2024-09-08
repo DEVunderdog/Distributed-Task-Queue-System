@@ -64,6 +64,43 @@ func (q *Queries) DeleteJWTKey(ctx context.Context, publicKey string) error {
 	return err
 }
 
+const getLatestJWTKey = `-- name: GetLatestJWTKey :many
+SELECT id, public_key, private_key, algorithm, is_active, expires_at, created_at, updated_at FROM jwtkeys
+WHERE
+    is_active = $1
+ORDER BY created_at DESC
+LIMIT 1
+`
+
+func (q *Queries) GetLatestJWTKey(ctx context.Context, isActive pgtype.Bool) ([]Jwtkey, error) {
+	rows, err := q.db.Query(ctx, getLatestJWTKey, isActive)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Jwtkey{}
+	for rows.Next() {
+		var i Jwtkey
+		if err := rows.Scan(
+			&i.ID,
+			&i.PublicKey,
+			&i.PrivateKey,
+			&i.Algorithm,
+			&i.IsActive,
+			&i.ExpiresAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateJWTKeysActiveness = `-- name: UpdateJWTKeysActiveness :one
 UPDATE jwtkeys
 SET

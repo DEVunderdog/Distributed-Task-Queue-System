@@ -9,6 +9,13 @@ INSERT INTO jwtkeys (
     $1, $2, $3, $4, $5
 ) RETURNING *;
 
+-- name: GetLatestJWTKey :many
+SELECT * FROM jwtkeys
+WHERE
+    is_active = sqlc.arg('is_active')
+ORDER BY created_at DESC
+LIMIT 1;
+
 -- name: UpdateJWTKeysActiveness :one
 UPDATE jwtkeys
 SET
