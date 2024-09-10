@@ -16,6 +16,9 @@ WHERE
 ORDER BY created_at DESC
 LIMIT 1;
 
+-- name: CountJWTKeys :one
+SELECT COUNT(*) FROM jwtkeys;
+
 -- name: UpdateJWTKeysActiveness :one
 UPDATE jwtkeys
 SET

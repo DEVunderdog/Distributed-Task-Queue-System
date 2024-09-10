@@ -12,6 +12,7 @@ import (
 
 	"github.com/DEVunderdog/auth-service/api"
 	database "github.com/DEVunderdog/auth-service/database/sqlc"
+	"github.com/DEVunderdog/auth-service/token"
 	"github.com/DEVunderdog/auth-service/utils"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
@@ -38,6 +39,11 @@ func main() {
 	}
 
 	store := database.NewStore(connPool)
+
+	err = token.InitializeJWTKeys(config.Passphrase, store, ctx)
+	if err != nil {
+		log.Fatal().Err(err).Msg("cannot generate keys")
+	}
 
 	server, err := api.NewServer(config, store)
 	if err != nil {

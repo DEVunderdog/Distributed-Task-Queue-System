@@ -37,7 +37,7 @@ LIMIT sqlc.narg('limit')
 OFFSET sqlc.narg('offset');
 
 -- name: LoggedOutSession :one
-UPDATE users
+UPDATE sessions
 SET
     logged_out = current_timestamp,
     updated_at = current_timestamp

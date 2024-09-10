@@ -266,23 +266,29 @@ func (q *Queries) GetUserSessionsByActiveness(ctx context.Context, arg GetUserSe
 }
 
 const loggedOutSession = `-- name: LoggedOutSession :one
-UPDATE users
+UPDATE sessions
 SET
     logged_out = current_timestamp,
     updated_at = current_timestamp
 WHERE
     id = $1
-RETURNING id, email, hashed_password, email_verified, created_at, updated_at
+RETURNING id, user_id, token, refresh_token, token_expires_at, refresh_token_expires_at, is_active, ip, user_agent, logged_out, created_at, updated_at
 `
 
-func (q *Queries) LoggedOutSession(ctx context.Context, id int64) (User, error) {
+func (q *Queries) LoggedOutSession(ctx context.Context, id int64) (Session, error) {
 	row := q.db.QueryRow(ctx, loggedOutSession, id)
-	var i User
+	var i Session
 	err := row.Scan(
 		&i.ID,
-		&i.Email,
-		&i.HashedPassword,
-		&i.EmailVerified,
+		&i.UserID,
+		&i.Token,
+		&i.RefreshToken,
+		&i.TokenExpiresAt,
+		&i.RefreshTokenExpiresAt,
+		&i.IsActive,
+		&i.Ip,
+		&i.UserAgent,
+		&i.LoggedOut,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

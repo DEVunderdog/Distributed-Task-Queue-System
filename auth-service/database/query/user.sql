@@ -7,6 +7,20 @@ INSERT INTO users (
     $1, $2, $3
 ) RETURNING *;
 
+-- name: GetUserByID :one
+SELECT * FROM users
+WHERE
+    id = sqlc.arg('id');
+
+-- name: CheckForExistingUser :one
+SELECT EXISTS(SELECT 1 FROM users WHERE email = sqlc.arg('email'));
+
+-- name: GetUserByEmail :one
+SELECT * FROM users
+WHERE
+    email = sqlc.arg('email')
+LIMIT 1;
+
 -- name: UpdateUser :one
 UPDATE users
 SET
@@ -17,3 +31,5 @@ SET
 WHERE
     id = sqlc.arg(id)
 RETURNING *;
+
+

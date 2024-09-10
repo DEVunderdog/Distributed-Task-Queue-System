@@ -68,7 +68,7 @@ func GenerateToken(privateKey *rsa.PrivateKey, userID uint, email string, config
 			Subject: strconv.Itoa(int(userID)),
 			Audience: jwt.ClaimStrings{config.Audience},
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)),
-			NotBefore: jwt.NewNumericDate(time.Now().Add(15 * time.Minute)),
+			NotBefore: jwt.NewNumericDate(time.Now()),
 			IssuedAt: jwt.NewNumericDate(time.Now()),
 			ID: uuid.New().String(),
 		},
@@ -157,3 +157,23 @@ func verifyAudience(tokenAud jwt.ClaimStrings, expectedAud string) bool {
 func verifyIssuer(tokenIss string, expectedIss string) bool {
 	return subtle.ConstantTimeCompare([]byte(tokenIss), []byte(expectedIss)) == 1
 }
+
+func GetExpirationTime(tokenString string, publicKey *rsa.PublicKey) (*time.Time, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(t *jwt.Token) (interface{}, error){
+		if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
+		}
+		return publicKey, nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse token: %v", err)
+	}
+
+	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
+		return &claims.ExpiresAt.Time, nil
+	}
+
+	return nil, errors.New("invalid token")
+}
+

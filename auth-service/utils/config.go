@@ -9,6 +9,7 @@ type Config struct {
 	Issuer      string `mapstructure:"ISSUER"`
 	Audience    string `mapstructure:"AUDIENCE"`
 	Passphrase  string `mapstructure:"PASSPHRASE"`
+	Domain      string `mapstructure:"DOMAIN"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

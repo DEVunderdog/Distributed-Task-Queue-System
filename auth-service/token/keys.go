@@ -26,7 +26,22 @@ type JWTKeyResponse struct {
 	ExpiresAt time.Time
 }
 
-func GenerateAndStoreKeys(passphrase string, store database.Store, ctx context.Context) error {
+func InitializeJWTKeys(passphrase string, store database.Store, ctx context.Context) error {
+	
+	count, err := store.CountJWTKeys(ctx)
+
+	if err != nil {
+		return err
+	}
+
+	if count == 0 {
+		return generateAndStoreKeys(passphrase, store, ctx)
+	}
+
+	return nil
+}
+
+func generateAndStoreKeys(passphrase string, store database.Store, ctx context.Context) error {
 	privateKey, publicKey, err := generateRSAKeys()
 
 	if err != nil {
